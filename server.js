@@ -1,51 +1,62 @@
 const express = require("express");
+const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-// Thư mục chứa file dữ liệu
-const dataDir = path.join(__dirname, "data");
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
+// Auto tạo thư mục data nếu chưa có
+const dataFolder = path.join(__dirname, "data");
+if (!fs.existsSync(dataFolder)) {
+    fs.mkdirSync(dataFolder);
 }
 
-// API nhận nhiệt độ từ ESP32
-app.post("/data", (req, res) => {
-    const { station, temperature } = req.body;
+// API nhận dữ liệu nhiệt độ
+app.post("/temperature/:station", (req, res) => {
+    const station = req.params.station;
+    const value = req.body.value ?? req.body.Temp ?? req.body.temp;
 
-    if (!station || temperature === undefined) {
-        return res.status(400).send("Missing station or temperature");
+    if (value === undefined) {
+        return res.status(400).json({ error: "Thiếu value" });
     }
 
-    const filepath = path.join(dataDir, `${station}.txt`);
+    const timestamp = new Date().toISOString();
+    const filename = path.join(dataFolder, `station_${station}.txt`);
+    const line = `${timestamp} - ${value}°C\n`;
 
-    const line = `${new Date().toLocaleTimeString()} - Nhiệt độ: ${temperature}°C\n`;
-
-    fs.appendFile(filepath, line, (err) => {
+    fs.appendFile(filename, line, (err) => {
         if (err) {
             console.error("Lỗi ghi file:", err);
-            return res.status(500).send("Save failed");
+            return res.status(500).send("Không ghi file được");
         }
-        res.send("OK");
+
+        console.log(`Đã lưu -> ${filename}: ${line.trim()}`);
+        res.json({ message: "OK", station, value });
     });
 });
 
-// API để web lấy dữ liệu
-app.get("/data/:station", (req, res) => {
-    const filepath = path.join(dataDir, `${req.params.station}.txt`);
+// API xem dữ liệu của 1 trạm
+app.get("/temperature/:station", (req, res) => {
+    const station = req.params.station;
+    const filename = path.join(dataFolder, `station_${station}.txt`);
 
-    if (!fs.existsSync(filepath)) {
-        return res.status(404).send("Station not found");
+    if (!fs.existsSync(filename)) {
+        return res.json({ station, data: [] });
     }
 
-    fs.readFile(filepath, "utf8", (err, content) => {
-        if (err) return res.status(500).send("Read failed");
-        res.send(content);
+    fs.readFile(filename, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).send("Lỗi đọc file");
+        }
+
+        const lines = data.trim().split("\n");
+        res.json({ station, data: lines });
     });
 });
 
-// Port Render
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log("Server đang chạy trên port " + PORT);
+});
