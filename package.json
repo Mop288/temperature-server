@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "admin",
   "version": "1.0.0",
   "description": "",
@@ -15,3 +16,18 @@
     "socket.io": "^4.7.5"
   }
 }
+=======
+  "name": "iot-temp-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+"dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.0",
+    "fs-extra": "^11.1.0"
+  }
+}
+>>>>>>> d76493116050a0b15fc70b2c05d53273ae502b9d
