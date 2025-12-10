@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -62,7 +61,6 @@ app.listen(PORT, () => {
     console.log("Server đang chạy trên port " + PORT);
 });
 
-=======
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
@@ -345,4 +343,4 @@ app.post('/temperature/:station', (req, res) => {
 server.listen(PORT, () => {
     console.log("Server chạy tại http://localhost:" + PORT);
 });
->>>>>>> d76493116050a0b15fc70b2c05d53273ae502b9d
+
